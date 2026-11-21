@@ -86,11 +86,18 @@ if st.button("Interpret Change Request", type="secondary"):
         st.error(f"Failed to interpret change request: {exc}")
 
 if "parsed_cr" not in st.session_state:
-    st.session_state["parsed_cr"] = interpret_change_request(
-        cr_text=default_cr,
-        valid_task_ids=valid_task_ids,
-        api_key=api_key_input.strip() or None,
-    )
+    try:
+        st.session_state["parsed_cr"] = interpret_change_request(
+            cr_text=default_cr,
+            valid_task_ids=valid_task_ids,
+            api_key=api_key_input.strip() or None,
+        )
+    except Exception:
+        st.session_state["parsed_cr"] = interpret_change_request(
+            cr_text=default_cr,
+            valid_task_ids=valid_task_ids,
+            api_key="",
+        )
 
 parsed_cr = st.session_state["parsed_cr"]
 st.caption(f"Parser Mode: `{parsed_cr.get('source', 'unknown')}` — {parsed_cr.get('rationale', '')}")
