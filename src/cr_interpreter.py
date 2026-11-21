@@ -102,15 +102,20 @@ def interpret_change_request(
         f"Change Request:\n{cr_text.strip()}"
     )
 
-    response = client.models.generate_content(
-        model="gemini-3.8-flash",
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=ParsedChangeRequest,
-            temperature=0.1,
-        ),
-    )
+    try:
+        response = client.models.generate_content(
+            model="gemini-3.8-flash",
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=ParsedChangeRequest,
+                temperature=0.1,
+            ),
+        )
+    except Exception as exc:
+        fallback = _fallback_rule_parse(cr_text, valid_task_ids)
+        fallback["rationale"] = f"Gemini unavailable ({type(exc).__name__}); {fallback.get("rationale", "used deterministic rule parser.")}"
+        return fallback
 
     parsed: ParsedChangeRequest = response.parsed
     task_adjustments = {}
