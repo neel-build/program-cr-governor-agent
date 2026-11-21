@@ -1,0 +1,13 @@
+task_id,task_name,phase,predecessors,duration_days,effort_hours,daily_rate_usd
+T01,Kickoff & Scope Alignment,Discovery,,3,24,600
+T02,Tenant & SSO Architecture,Design,T01,5,40,800
+T03,Data Mapping & Schema Design,Design,T01,6,48,750
+T04,Core SaaS Configuration,Build,T02,8,64,700
+T05,ERP & Billing API Integration,Build,T02;T03,10,80,850
+T06,Historical Data Migration Script,Build,T03,7,56,700
+T07,Integration & Data Testing,Test,T04;T05;T06,6,48,650
+T08,Security & Compliance Review,Test,T05,4,32,900
+T09,UAT & Stakeholder Sign-off,UAT,T07;T08,5,40,650
+T10,Cutover Runbook & Dress Rehearsal,Release,T09,3,24,800
+T11,Production Cutover & Go-Live,Release,T10,2,20,950
+T12,Hypercare & Stabilization,Hypercare,T11,5,40,600
