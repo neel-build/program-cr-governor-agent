@@ -99,6 +99,21 @@ if "parsed_cr" not in st.session_state:
             api_key="",
         )
 
+if st.button("Interpret Change Request"):
+    try:
+        st.session_state["parsed_cr"] = interpret_change_request(
+            cr_text=cr_text,
+            valid_task_ids=valid_task_ids,
+            api_key=api_key_input.strip() or None,
+        )
+    except Exception as exc:
+        st.warning(f"Gemini API unavailable ({type(exc).__name__}); using deterministic fallback parser.")
+        st.session_state["parsed_cr"] = interpret_change_request(
+            cr_text=cr_text,
+            valid_task_ids=valid_task_ids,
+            api_key="",
+        )
+
 parsed_cr = st.session_state["parsed_cr"]
 st.caption(f"Parser Mode: `{parsed_cr.get('source', 'unknown')}` — {parsed_cr.get('rationale', '')}")
 
