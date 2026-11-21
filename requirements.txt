@@ -3,3 +3,6 @@ pandas
 networkx
 pytest
 google-genai
+
+fastapi
+uvicorn
