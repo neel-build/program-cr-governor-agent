@@ -109,7 +109,6 @@ def interpret_change_request(
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
                 response_schema=ParsedChangeRequest,
-                temperature=0.1,
             ),
         )
     except Exception as exc:

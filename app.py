@@ -31,7 +31,7 @@ else:
 st.sidebar.header("2. Optional Gemini API Key")
 api_key_input = st.sidebar.text_input(
     "GEMINI_API_KEY (optional — uses fallback if blank)",
-    value=os.environ.get("GEMINI_API_KEY", ""),
+    value="",
     type="password",
 )
 
@@ -96,10 +96,15 @@ if "parsed_cr" not in st.session_state:
 parsed_cr = st.session_state["parsed_cr"]
 st.caption(f"Parser Mode: `{parsed_cr.get('source', 'unknown')}` — {parsed_cr.get('rationale', '')}")
 
+parsed_tasks = list(parsed_cr.get("task_adjustments", {}).keys())
+default_task = parsed_tasks[0] if parsed_tasks and parsed_tasks[0] in valid_task_ids else ("T05" if "T05" in valid_task_ids else valid_task_ids[0])
+parse_sig = f"{default_task}_{len(parsed_tasks)}_{parsed_cr.get('rationale', '')[:20]}"
+
 target_task = st.selectbox(
     "Human Review — Target Task ID:",
     options=valid_task_ids,
-    index=valid_task_ids.index("T05") if "T05" in valid_task_ids else 0,
+    index=valid_task_ids.index(default_task),
+    key=f"task_select_{parse_sig}",
 )
 existing_adj = parsed_cr.get("task_adjustments", {}).get(target_task, {})
 
@@ -108,17 +113,20 @@ dur_delta = c_dur.number_input(
     "Duration Delta (days)",
     value=float(existing_adj.get("duration_delta_days", 0.0)),
     step=0.5,
+    key=f"dur_{target_task}_{parse_sig}",
 )
 eff_delta = c_eff.number_input(
     "Effort Delta (hours)",
     value=float(existing_adj.get("effort_delta_hours", 0.0)),
     step=4.0,
+    key=f"eff_{target_task}_{parse_sig}",
 )
 rate_override_raw = c_rate.number_input(
     "Daily Rate Override USD (0 = keep current)",
     min_value=0.0,
     value=float(existing_adj.get("daily_rate_override") or 0.0),
     step=50.0,
+    key=f"rate_{target_task}_{parse_sig}",
 )
 rate_override = rate_override_raw if rate_override_raw > 0 else None
 
@@ -135,7 +143,7 @@ if st.button("Simulate Deterministic Impact", type="primary"):
                 }
             },
             new_tasks=parsed_cr.get("new_tasks", []),
-            scenario_name=parsed_cr.get("scenario_title", "Simulated CR"),
+            scenario_name=f"CR Simulation ({target_task}: {dur_delta:+.1f}d, {eff_delta:+.0f}h)",
         )
         st.session_state["sim_result"] = sim_res
     except Exception as exc:
@@ -148,17 +156,19 @@ if "sim_result" in st.session_state:
 
     st.subheader(f"Scenario Comparison: {sim_res['scenario_name']}")
     m1, m2, m3, m4 = st.columns(4)
+    dur_d = deltas["project_duration_delta_days"]
+    cost_d = deltas["total_cost_delta_usd"]
     m1.metric(
         "Simulated Critical Path",
         f"{sim_summary['project_duration_days']:.0f} days",
-        delta=f"{deltas['project_duration_delta_days']:+.1f} days",
-        delta_color="inverse",
+        delta="0 days" if dur_d == 0 else f"{dur_d:+.1f} days",
+        delta_color="off" if dur_d == 0 else "inverse",
     )
     m2.metric(
         "Simulated Total Cost",
         f"${sim_summary['total_baseline_cost_usd']:,.2f}",
-        delta=f"${deltas['total_cost_delta_usd']:+,.2f}",
-        delta_color="inverse",
+        delta="$0.00" if cost_d == 0 else f"${cost_d:+,.2f}",
+        delta_color="off" if cost_d == 0 else "inverse",
     )
     m3.metric(
         "Simulated Total Effort",
