@@ -67,7 +67,7 @@ def _fallback_rule_parse(cr_text: str, valid_task_ids: list[str]) -> dict:
     return {
         "scenario_title": f"CR Simulation ({', '.join(found_ids)})",
         "rationale": (
-            f"Parsed via deterministic fallback mode (no GEMINI_API_KEY set): "
+            f"Parsed via deterministic fallback engine (rule-based backup): "
             f"applied {dur_delta:+.1f} days and {eff_delta:+.1f} hours to {', '.join(found_ids)}."
         ),
         "task_adjustments": task_adjustments,
