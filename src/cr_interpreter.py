@@ -113,7 +113,7 @@ def interpret_change_request(
         )
     except Exception as exc:
         fallback = _fallback_rule_parse(cr_text, valid_task_ids)
-        fallback["rationale"] = fallback.get("rationale", "Parsed via deterministic rule-based engine.")}"
+        fallback["rationale"] = fallback.get("rationale", "Parsed via deterministic rule-based engine.")
         return fallback
 
     parsed: ParsedChangeRequest = response.parsed
